@@ -62,7 +62,7 @@ jobs:
             // Format changed files for display
             const formattedFiles = changedFiles
               .trim()
-              .split('\n')
+              .split(', ')
               // .map(file => `- ${file}`)
               .join('\n');
             
