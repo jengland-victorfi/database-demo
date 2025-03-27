@@ -124,5 +124,7 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "# TEST\n## TESTING [link](https://github.com/)"
+                  text: "# TEST\n## TESTING <http://www.example.com|This message *is* a link>"
+
+                  
           
