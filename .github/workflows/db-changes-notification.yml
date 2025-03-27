@@ -52,33 +52,53 @@ jobs:
           echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Add changes to workflow summary
+      - name: Generate summary data
+        id: generate_summary
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs')
             const changedFiles = process.env.CHANGED_FILES || '';
             const latestRelease = process.env.LATEST_RELEASE || '';
             const serverUrl = process.env.GITHUB_SERVER_URL || '';
             const repository = process.env.GITHUB_REPOSITORY || '';
             const sha = process.env.GITHUB_SHA || '';
             
-            const summary = [
-              `## Database Changes Detected from ${latestRelease} to ${latestRelease}`,
-              '',
-              `### Changed ${changedFiles.trim().split('\n').length} files:` ,
-              changedFiles,
-              '',
-              '### Comparison Link:',
-              `[View changes](${serverUrl}/${repository}/compare/${latestRelease}...${sha})`,
-              '',
-              '> Note: The comparison is made between the latest release tag and the current commit SHA.'
-            ].join('\n');
+            const changedFilesList = changedFiles.trim().split('\n');
+            const changedFilesCount = changedFilesList.length;
             
-            await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
+            const summary = {
+              title: `Database Changes Detected from ${latestRelease} to ${sha.slice(0, 7)}`,
+              changedFilesCount,
+              changedFiles: changedFilesList,
+              comparisonLink: `${serverUrl}/${repository}/compare/${latestRelease}...${sha}`,
+              note: 'Note: The comparison is made between the latest release tag and the current commit SHA.'
+            };
+            
+            core.setOutput('summary', JSON.stringify(summary));
         env:
           CHANGED_FILES: ${{ steps.get_changes.outputs.changed_files }}
-          LATEST_RELEASE: ${{ steps.get_latest_release.outputs.latest_release }} 
+          LATEST_RELEASE: ${{ steps.get_latest_release.outputs.latest_release }}
+
+      - name: Add changes to workflow summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const summary = JSON.parse(process.env.SUMMARY);
+            const markdown = [
+              `## ${summary.title}`,
+              '',
+              `### Changed ${summary.changedFilesCount} files:`,
+              summary.changedFiles.join('\n'),
+              '',
+              '### Comparison Link:',
+              `[View changes](${summary.comparisonLink})`,
+              '',
+              `> ${summary.note}`
+            ].join('\n');
+            
+            await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, markdown);
+        env:
+          SUMMARY: ${{ steps.generate_summary.outputs.summary }}
 
       - name: Post to a Slack channel
         if: always()
@@ -88,5 +108,21 @@ jobs:
           token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
           payload: |
             channel: ${{ secrets.SLACK_CHANNEL_ID }}
-            text: "howdy!"
+            blocks:
+              - type: header
+                text:
+                  type: plain_text
+                  text: ${{ steps.generate_summary.outputs.summary.title }}
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: "*Changed Files:*\n${{ steps.generate_summary.outputs.summary.changedFilesCount }} files modified"
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: "*Comparison:*\n<${{ steps.generate_summary.outputs.summary.comparisonLink }}|View changes>"
+              - type: context
+                elements:
+                  - type: mrkdwn
+                    text: ${{ steps.generate_summary.outputs.summary.note }}
           
