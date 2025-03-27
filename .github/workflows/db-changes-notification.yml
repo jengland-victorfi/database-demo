@@ -61,7 +61,7 @@ jobs:
             const summary = [
               `## Database Changes Detected from ${latestRelease} to ${latestRelease}`,
               '',
-              `### Changed (${changedFiles.length} files):` ,
+              `### Changed ${changedFiles.trim().split('\n').length} files:` ,
               changedFiles,
               '',
               '### Comparison Link:',
