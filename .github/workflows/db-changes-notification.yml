@@ -64,7 +64,7 @@ jobs:
               .trim()
               .split(',')
               // .map(file => `- ${file}`)
-              .join('\n');
+              .join(' ');
             
             const summary = [
               `## Database Changes Detected from ${latestRelease} to ${latestRelease}`,
@@ -83,7 +83,7 @@ jobs:
             await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
             
             // Set output for Slack message
-            core.setOutput('formatted_files', changedFiles);
+            core.setOutput('formatted_files', formattedFiles);
         env:
           CHANGED_FILES: ${{ steps.get_changes.outputs.changed_files }}
           LATEST_RELEASE: ${{ steps.get_latest_release.outputs.latest_release }} 
