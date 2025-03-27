@@ -48,6 +48,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Add changes to workflow summary
+        id: get_summary
         uses: actions/github-script@v7
         with:
           script: |
@@ -58,11 +59,20 @@ jobs:
             const repository = process.env.GITHUB_REPOSITORY || '';
             const sha = process.env.GITHUB_SHA || '';
             
+            // Format changed files for display
+            const formattedFiles = changedFiles
+              .trim()
+              .split('\n')
+              .map(file => `- ${file}`)
+              .join('\n');
+            
             const summary = [
               `## Database Changes Detected from ${latestRelease} to ${latestRelease}`,
               '',
               `### Changed ${changedFiles.trim().split('\n').length} files:` ,
-              changedFiles,
+              '```',
+              formattedFiles,
+              '```',
               '',
               '### Comparison Link:',
               `[View changes](${serverUrl}/${repository}/compare/${latestRelease}...${sha})`,
@@ -71,6 +81,9 @@ jobs:
             ].join('\n');
             
             await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
+            
+            // Set output for Slack message
+            core.setOutput('formatted_files', formattedFiles);
         env:
           CHANGED_FILES: ${{ steps.get_changes.outputs.changed_files }}
           LATEST_RELEASE: ${{ steps.get_latest_release.outputs.latest_release }} 
@@ -83,15 +96,17 @@ jobs:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
           payload: |
-            channel: ${{ secrets.SLACK_CHANNEL_ID }}
-            text: "Database changes detected: ${{ steps.get_changes.outputs.changed_files }}"
-            blocks:
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: |
-                    *Database Changes Detected*
-                    
-                    *Comparison Link:* <${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.get_latest_release.outputs.latest_release }}...${{ github.sha }}|View changes>
-                    *Note:* The comparison is made between the latest release tag and the current commit SHA.
+            {
+              "channel": "${{ secrets.SLACK_CHANNEL_ID }}",
+              "text": "Database changes detected: ${{ steps.get_changes.outputs.changed_files }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Database Changes Detected*\n*Changed Files:*\n```${{ steps.get_summary.outputs.formatted_files }}```\n*Comparison Link:* <${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.get_latest_release.outputs.latest_release }}...${{ github.sha }}|View changes>\n*Note:* The comparison is made between the latest release tag and the current commit SHA."
+                  }
+                }
+              ]
+            }
         
