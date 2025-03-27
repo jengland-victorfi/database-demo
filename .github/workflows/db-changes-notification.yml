@@ -63,7 +63,7 @@ jobs:
             const formattedFiles = changedFiles
               .trim()
               .split('\n')
-              .map(file => `- ${file}`)
+              // .map(file => `- ${file}`)
               .join('\n');
             
             const summary = [
