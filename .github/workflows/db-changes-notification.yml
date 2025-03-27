@@ -65,7 +65,7 @@ jobs:
               .split('\n')
               .map(file => `- ${file}`);
 
-            const formattedFiles = `\n${formattedFilesList.join('\n')}\n`;
+            const formattedFiles = `- {formattedFilesList.join('\n')}\n`;
             
             const summary = [
               `## Database Changes Detected from ${latestRelease} to ${latestRelease}`,
