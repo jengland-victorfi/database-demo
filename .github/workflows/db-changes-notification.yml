@@ -59,7 +59,7 @@ jobs:
             const sha = process.env.GITHUB_SHA || '';
             
             const summary = [
-              '## Database Changes Detected from ${latestRelease || 'previous commit'} to ${latestRelease}',
+              '## Database Changes Detected from ${latestRelease || "previous commit"} to ${latestRelease}',
               '',
               '### Changed Files:',
               changedFiles,
