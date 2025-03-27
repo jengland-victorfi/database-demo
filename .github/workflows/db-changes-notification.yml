@@ -84,12 +84,6 @@ jobs:
           CHANGED_FILES: ${{ steps.get_changes.outputs.changed_files }}
           LATEST_RELEASE: ${{ steps.get_latest_release.outputs.latest_release }} 
 
-      - name: Echo formatted files
-        run: echo "${{ steps.get_summary.outputs.formatted_files }}"
-
-      - name: Echo changed_files files
-        run: echo "${{ steps.get_changes.outputs.changed_files }}"
-
       - name: Post to a Slack channel
         if: always()
         uses: slackapi/slack-github-action@v2.0.0
@@ -106,8 +100,8 @@ jobs:
                   text: |
                     *Database Changes Detected*
                     *Comparison Link:* <${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.get_latest_release.outputs.latest_release }}...${{ github.sha }}|View changes>
-                    *Note:* The comparison is made between the latest release tag and the current commit SHA.
+                    "${{ steps.get_summary.outputs.formatted_files }}"
               - type: section
                 text:
                   type: mrkdwn
-                  text: "${{ steps.get_summary.outputs.formatted_files }}"
+                  text: 
