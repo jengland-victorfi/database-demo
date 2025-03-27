@@ -106,7 +106,7 @@ jobs:
                   type: mrkdwn
                   text: |
                     *Database Changes Detected*
-                    *Changed Files:*
+                    *Changed Files:* ${{ steps.get_summary.outputs.formatted_files }}
                     *Comparison Link:* <${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.get_latest_release.outputs.latest_release }}...${{ github.sha }}|View changes>
                     *Note:* The comparison is made between the latest release tag and the current commit SHA.
         
