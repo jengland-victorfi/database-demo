@@ -60,10 +60,12 @@ jobs:
             const sha = process.env.GITHUB_SHA || '';
             
             // Format changed files for display
-            const formattedFiles = changedFiles
+            const formattedFilesList = changedFiles
               .trim()
               .split('\n')
-              .map(file => `- ${file}\n`);
+              .map(file => `- ${file}`);
+
+            const formattedFiles = `\n${formattedFilesList.join('\n')}\n`;
             
             const summary = [
               `## Database Changes Detected from ${latestRelease} to ${latestRelease}`,
