@@ -103,10 +103,28 @@ jobs:
           token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
           payload: |
             channel: ${{ secrets.SLACK_CHANNEL_ID }}
-            text: "*Database Changes Detected*\n\n*Changed Files:*\n${{ steps.generate_summary.outputs.summary.changedFilesCount }} files modified\n\n*Comparison:*\n<${{ steps.generate_summary.outputs.summary.comparisonLink }}|View changes>\n\n${{ steps.generate_summary.outputs.summary.note }}"
+            text: |
+              *Database Changes Detected*
+              
+              *Changed Files:*
+              ${{ steps.generate_summary.outputs.summary.changedFilesCount }} files modified
+              
+              *Comparison:*
+              <${{ steps.generate_summary.outputs.summary.comparisonLink }}|View changes>
+              
+              ${{ steps.generate_summary.outputs.summary.note }}
             blocks:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "*Database Changes Detected*\n\n*Changed Files:*\n${{ steps.generate_summary.outputs.summary.changedFilesCount }} files modified\n\n*Comparison:*\n<${{ steps.generate_summary.outputs.summary.comparisonLink }}|View changes>\n\n${{ steps.generate_summary.outputs.summary.note }}"
+                  text: |
+                    *Database Changes Detected*
+                    
+                    *Changed Files:*
+                    ${{ steps.generate_summary.outputs.summary.changedFilesCount }} files modified
+                    
+                    *Comparison:*
+                    <${{ steps.generate_summary.outputs.summary.comparisonLink }}|View changes>
+                    
+                    ${{ steps.generate_summary.outputs.summary.note }}
           
