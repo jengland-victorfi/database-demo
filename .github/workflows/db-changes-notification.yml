@@ -75,22 +75,37 @@ jobs:
               note: 'Note: The comparison is made between the latest release tag and the current commit SHA.'
             };
             
+            // Create markdown template
+            const markdownTemplate = {
+              slack: [
+                '*Database Changes Detected*',
+                '',
+                '*Changed Files:*',
+                `${summary.changedFilesCount} files modified`,
+                '',
+                '*Comparison:*',
+                `<${summary.comparisonLink}|View changes>`,
+                '',
+                summary.note
+              ].join('\n'),
+              github: [
+                `## ${summary.title}`,
+                '',
+                `### Changed ${summary.changedFilesCount} files:`,
+                summary.changedFiles.join('\n'),
+                '',
+                '### Comparison Link:',
+                `[View changes](${summary.comparisonLink})`,
+                '',
+                `> ${summary.note}`
+              ].join('\n')
+            };
+            
             core.setOutput('summary', JSON.stringify(summary));
+            core.setOutput('markdown', JSON.stringify(markdownTemplate));
 
             // Add changes to workflow summary
-            const markdown = [
-              `## ${summary.title}`,
-              '',
-              `### Changed ${summary.changedFilesCount} files:`,
-              summary.changedFiles.join('\n'),
-              '',
-              '### Comparison Link:',
-              `[View changes](${summary.comparisonLink})`,
-              '',
-              `> ${summary.note}`
-            ].join('\n');
-            
-            await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, markdown);
+            await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, markdownTemplate.github);
         env:
           CHANGED_FILES: ${{ steps.get_changes.outputs.changed_files }}
           LATEST_RELEASE: ${{ steps.get_latest_release.outputs.latest_release }}
@@ -103,28 +118,11 @@ jobs:
           token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
           payload: |
             channel: ${{ secrets.SLACK_CHANNEL_ID }}
-            text: |
-              *Database Changes Detected*
-              
-              *Changed Files:*
-              ${{ steps.generate_summary.outputs.summary.changedFilesCount }} files modified
-              
-              *Comparison:*
-              <${{ steps.generate_summary.outputs.summary.comparisonLink }}|View changes>
-              
-              ${{ steps.generate_summary.outputs.summary.note }}
+            text: "Database changes detected: ${{ steps.generate_summary.outputs.summary.changedFilesCount }} files modified"
             blocks:
               - type: "section"
                 text:
                   type: "mrkdwn"
                   text: |
-                    *Database Changes Detected*
-                    
-                    *Changed Files:*
-                    ${{ steps.generate_summary.outputs.summary.changedFilesCount }} files modified
-                    
-                    *Comparison:*
-                    <${{ steps.generate_summary.outputs.summary.comparisonLink }}|View changes>
-                    
-                    ${{ steps.generate_summary.outputs.summary.note }}
+                    ${{ steps.generate_summary.outputs.markdown.slack }}
           
