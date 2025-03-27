@@ -114,6 +114,7 @@ jobs:
         if: always()
         uses: slackapi/slack-github-action@v2.0.0
         with:
+          error: true
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
           payload: |
@@ -123,5 +124,5 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "# TEST\n## TESTING (link)[https://github.com/]"
+                  text: "# TEST\n## TESTING [link](https://github.com/)"
           
