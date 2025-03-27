@@ -7,6 +7,12 @@ on:
     paths:
       - '**/src/main/resources/db/**'
   workflow_dispatch: {}
+
+# Add permissions for security best practices
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   notify:
     runs-on: ubuntu-latest
@@ -49,7 +55,7 @@ jobs:
             const latestRelease = process.env.LATEST_RELEASE || '';
             const serverUrl = process.env.GITHUB_SERVER_URL || '';
             const repository = process.env.GITHUB_REPOSITORY || '';
-            const baseRef = process.env.GITHUB_BASE_REF || '';
+            const sha = process.env.GITHUB_SHA || '';
             
             const summary = [
               '## Database Changes Detected',
@@ -58,7 +64,9 @@ jobs:
               changedFiles,
               '',
               '### Comparison Link:',
-              `[View changes](${serverUrl}/${repository}/compare/${latestRelease}...${baseRef})`
+              `[View changes from ${latestRelease || 'previous commit'} to current](${serverUrl}/${repository}/compare/${latestRelease}...${sha})`,
+              '',
+              '> Note: The comparison is made between the latest release tag and the current commit SHA.'
             ].join('\n');
             
             await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
