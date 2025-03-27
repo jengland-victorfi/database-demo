@@ -103,21 +103,22 @@ jobs:
           token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
           payload: |
             channel: ${{ secrets.SLACK_CHANNEL_ID }}
+            text: "Database changes detected: ${{ steps.generate_summary.outputs.summary.changedFilesCount }} files modified"
             blocks:
-              - type: header
+              - type: "header"
                 text:
-                  type: plain_text
-                  text: ${{ steps.generate_summary.outputs.summary.title }}
-              - type: section
+                  type: "plain_text"
+                  text: "${{ steps.generate_summary.outputs.summary.title }}"
+              - type: "section"
                 text:
-                  type: mrkdwn
+                  type: "mrkdwn"
                   text: "*Changed Files:*\n${{ steps.generate_summary.outputs.summary.changedFilesCount }} files modified"
-              - type: section
+              - type: "section"
                 text:
-                  type: mrkdwn
+                  type: "mrkdwn"
                   text: "*Comparison:*\n<${{ steps.generate_summary.outputs.summary.comparisonLink }}|View changes>"
-              - type: context
+              - type: "context"
                 elements:
-                  - type: mrkdwn
-                    text: ${{ steps.generate_summary.outputs.summary.note }}
+                  - type: "mrkdwn"
+                    text: "${{ steps.generate_summary.outputs.summary.note }}"
           
