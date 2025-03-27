@@ -61,7 +61,10 @@ jobs:
             
             // Format changed files for display
             const formattedFiles = changedFiles
-              
+              .trim()
+              .split(',')
+              .map(file => `- ${file}`)
+              .join('\n');
             
             const summary = [
               `## Database Changes Detected from ${latestRelease} to ${latestRelease}`,
@@ -87,6 +90,9 @@ jobs:
 
       - name: Echo formatted files
         run: echo "${{ steps.get_summary.outputs.formatted_files }}"
+
+      - name: Echo changed_files files
+        run: echo "${{ steps.get_changes.outputs.changed_files }}"
 
       - name: Post to a Slack channel
         if: always()
