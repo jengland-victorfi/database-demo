@@ -58,13 +58,13 @@ jobs:
             const sha = process.env.GITHUB_SHA || '';
             
             const summary = [
-              '## Database Changes Detected',
+              '## Database Changes Detected from ${latestRelease || 'previous commit'} to ${latestRelease}',
               '',
               '### Changed Files:',
               changedFiles,
               '',
               '### Comparison Link:',
-              `[View changes from ${latestRelease || 'previous commit'} to current](${serverUrl}/${repository}/compare/${latestRelease}...${sha})`,
+              `[View changes](${serverUrl}/${repository}/compare/${latestRelease}...${sha})`,
               '',
               '> Note: The comparison is made between the latest release tag and the current commit SHA.'
             ].join('\n');
