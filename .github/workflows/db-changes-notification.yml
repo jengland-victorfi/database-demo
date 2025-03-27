@@ -92,21 +92,21 @@ jobs:
         if: always()
         uses: slackapi/slack-github-action@v2.0.0
         with:
-          error: true
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
           payload: |
-            {
-              "channel": "${{ secrets.SLACK_CHANNEL_ID }}",
-              "text": "Database changes detected: ${{ steps.get_changes.outputs.changed_files }}",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Database Changes Detected*\n*Changed Files:*\n```${{ steps.get_summary.outputs.formatted_files }}```\n*Comparison Link:* <${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.get_latest_release.outputs.latest_release }}...${{ github.sha }}|View changes>\n*Note:* The comparison is made between the latest release tag and the current commit SHA."
-                  }
-                }
-              ]
-            }
+            channel: ${{ secrets.SLACK_CHANNEL_ID }}
+            text: "Database changes detected: ${{ steps.get_changes.outputs.changed_files }}"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: |
+                    *Database Changes Detected*
+                    *Changed Files:*
+                    ```
+                    ${{ steps.get_summary.outputs.formatted_files }}
+                    ```
+                    *Comparison Link:* <${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.get_latest_release.outputs.latest_release }}...${{ github.sha }}|View changes>
+                    *Note:* The comparison is made between the latest release tag and the current commit SHA.
         
