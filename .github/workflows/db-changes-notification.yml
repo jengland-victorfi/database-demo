@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get latest release
         id: get_latest_release
@@ -37,7 +39,12 @@ jobs:
         id: get_changes
         run: |
           if [ -n "${{ steps.get_latest_release.outputs.latest_release }}" ]; then
-            CHANGED_FILES=$(git diff --name-only ${{ steps.get_latest_release.outputs.latest_release }} HEAD -- "**/src/main/resources/db/**")
+            if git rev-parse "${{ steps.get_latest_release.outputs.latest_release }}" >/dev/null 2>&1; then
+              CHANGED_FILES=$(git diff --name-only "${{ steps.get_latest_release.outputs.latest_release }}" HEAD -- "**/src/main/resources/db/**")
+            else
+              echo "Warning: Tag ${{ steps.get_latest_release.outputs.latest_release }} does not exist, comparing with previous commit"
+              CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD -- "**/src/main/resources/db/**")
+            fi
           else
             CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD -- "**/src/main/resources/db/**")
           fi
