@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS sample_table (
 INSERT INTO sample_table (name) VALUES
     ('Sample 1'),
     ('Sample 2'),
-    ('Sample 3'); 
+    ('Sample 4'); 
