@@ -103,22 +103,10 @@ jobs:
           token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
           payload: |
             channel: ${{ secrets.SLACK_CHANNEL_ID }}
-            text: "Database changes detected: ${{ steps.generate_summary.outputs.summary.changedFilesCount }} files modified"
+            text: "*Database Changes Detected*\n\n*Changed Files:*\n${{ steps.generate_summary.outputs.summary.changedFilesCount }} files modified\n\n*Comparison:*\n<${{ steps.generate_summary.outputs.summary.comparisonLink }}|View changes>\n\n${{ steps.generate_summary.outputs.summary.note }}"
             blocks:
-              - type: "header"
-                text:
-                  type: "plain_text"
-                  text: "${{ steps.generate_summary.outputs.summary.title }}"
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "*Changed Files:*\n${{ steps.generate_summary.outputs.summary.changedFilesCount }} files modified"
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: "*Comparison:*\n<${{ steps.generate_summary.outputs.summary.comparisonLink }}|View changes>"
-              - type: "context"
-                elements:
-                  - type: "mrkdwn"
-                    text: "${{ steps.generate_summary.outputs.summary.note }}"
+                  text: "*Database Changes Detected*\n\n*Changed Files:*\n${{ steps.generate_summary.outputs.summary.changedFilesCount }} files modified\n\n*Comparison:*\n<${{ steps.generate_summary.outputs.summary.comparisonLink }}|View changes>\n\n${{ steps.generate_summary.outputs.summary.note }}"
           
