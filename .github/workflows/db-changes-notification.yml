@@ -1,0 +1,52 @@
+name: Database Changes Notification
+
+on:
+  push:
+    branches:
+      - 'release/**'
+    paths:
+      - '**/src/main/resources/db/**'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest release tag
+        id: get_latest_release
+        run: |
+          LATEST_RELEASE=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "latest_release=$LATEST_RELEASE" >> $GITHUB_OUTPUT
+
+      - name: Get changed files
+        id: get_changes
+        run: |
+          if [ -n "${{ steps.get_latest_release.outputs.latest_release }}" ]; then
+            CHANGED_FILES=$(git diff --name-only ${{ steps.get_latest_release.outputs.latest_release }} HEAD -- "**/src/main/resources/db/**")
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD -- "**/src/main/resources/db/**")
+          fi
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          channel-id: 'your-channel-id'
+          slack-message: |
+            🗄️ Database Changes Detected
+            
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            
+            Changed files:
+            ${{ steps.get_changes.outputs.changed_files }}
+            
+            View changes: ${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.get_latest_release.outputs.latest_release }}...${{ github.sha }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }} 
