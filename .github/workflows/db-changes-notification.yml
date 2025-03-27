@@ -19,8 +19,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Get latest release
         id: get_latest_release
@@ -39,12 +37,7 @@ jobs:
         id: get_changes
         run: |
           if [ -n "${{ steps.get_latest_release.outputs.latest_release }}" ]; then
-            if git rev-parse "${{ steps.get_latest_release.outputs.latest_release }}" >/dev/null 2>&1; then
-              CHANGED_FILES=$(git diff --name-only "${{ steps.get_latest_release.outputs.latest_release }}" HEAD -- "**/src/main/resources/db/**")
-            else
-              echo "Warning: Tag ${{ steps.get_latest_release.outputs.latest_release }} does not exist, comparing with previous commit"
-              CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD -- "**/src/main/resources/db/**")
-            fi
+            CHANGED_FILES=$(git diff --name-only ${{ steps.get_latest_release.outputs.latest_release }} HEAD -- "**/src/main/resources/db/**")
           else
             CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD -- "**/src/main/resources/db/**")
           fi
@@ -52,8 +45,7 @@ jobs:
           echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Generate summary data
-        id: generate_summary
+      - name: Add changes to workflow summary
         uses: actions/github-script@v7
         with:
           script: |
@@ -64,51 +56,22 @@ jobs:
             const repository = process.env.GITHUB_REPOSITORY || '';
             const sha = process.env.GITHUB_SHA || '';
             
-            const changedFilesList = changedFiles.trim().split('\n');
-            const changedFilesCount = changedFilesList.length;
+            const summary = [
+              `## Database Changes Detected from ${latestRelease} to ${latestRelease}`,
+              '',
+              `### Changed ${changedFiles.trim().split('\n').length} files:` ,
+              changedFiles,
+              '',
+              '### Comparison Link:',
+              `[View changes](${serverUrl}/${repository}/compare/${latestRelease}...${sha})`,
+              '',
+              '> Note: The comparison is made between the latest release tag and the current commit SHA.'
+            ].join('\n');
             
-            const summary = {
-              title: `Database Changes Detected from ${latestRelease} to ${sha.slice(0, 7)}`,
-              changedFilesCount,
-              changedFiles: changedFilesList,
-              comparisonLink: `${serverUrl}/${repository}/compare/${latestRelease}...${sha}`,
-              note: 'Note: The comparison is made between the latest release tag and the current commit SHA.'
-            };
-            
-            // Create markdown template
-            const markdownTemplate = {
-              slack: [
-                '*Database Changes Detected*',
-                '',
-                '*Changed Files:*',
-                `${summary.changedFilesCount} files modified`,
-                '',
-                '*Comparison:*',
-                `<${summary.comparisonLink}|View changes>`,
-                '',
-                summary.note
-              ].join('\n'),
-              github: [
-                `## ${summary.title}`,
-                '',
-                `### Changed ${summary.changedFilesCount} files:`,
-                summary.changedFiles.join('\n'),
-                '',
-                '### Comparison Link:',
-                `[View changes](${summary.comparisonLink})`,
-                '',
-                `> ${summary.note}`
-              ].join('\n')
-            };
-            
-            core.setOutput('summary', JSON.stringify(summary));
-            core.setOutput('markdown', JSON.stringify(markdownTemplate));
-
-            // Add changes to workflow summary
-            await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, markdownTemplate.github);
+            await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
         env:
           CHANGED_FILES: ${{ steps.get_changes.outputs.changed_files }}
-          LATEST_RELEASE: ${{ steps.get_latest_release.outputs.latest_release }}
+          LATEST_RELEASE: ${{ steps.get_latest_release.outputs.latest_release }} 
 
       - name: Post to a Slack channel
         if: always()
@@ -126,7 +89,5 @@ jobs:
                   type: "mrkdwn"
                   text: |
                     # TEST
-                    ## TESTING [link using markdown](https://github.com/)
-
-                  
-          
+                    ## TESTING <http://www.example.com|This message *is* a link>
+        
