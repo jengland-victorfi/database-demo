@@ -6,7 +6,7 @@ on:
       - 'release/**'
     paths:
       - '**/src/main/resources/db/**'
-
+  workflow_dispatch: {}
 jobs:
   notify:
     runs-on: ubuntu-latest
@@ -16,11 +16,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get latest release tag
+      - name: Get latest release
         id: get_latest_release
-        run: |
-          LATEST_RELEASE=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          echo "latest_release=$LATEST_RELEASE" >> $GITHUB_OUTPUT
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const releases = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 1
+            });
+            const latestRelease = releases.data[0]?.tag_name || '';
+            core.setOutput('latest_release', latestRelease);
 
       - name: Get changed files
         id: get_changes
@@ -34,19 +41,12 @@ jobs:
           echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Send Slack notification
-        uses: slackapi/slack-github-action@v1.25.0
-        with:
-          channel-id: 'your-channel-id'
-          slack-message: |
-            🗄️ Database Changes Detected
-            
-            Branch: ${{ github.ref_name }}
-            Commit: ${{ github.sha }}
-            
-            Changed files:
-            ${{ steps.get_changes.outputs.changed_files }}
-            
-            View changes: ${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.get_latest_release.outputs.latest_release }}...${{ github.sha }}
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }} 
+      - name: Add changes to workflow summary
+        run: |
+          echo "## Database Changes Detected" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Changed Files:" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.get_changes.outputs.changed_files }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Comparison Link:" >> $GITHUB_STEP_SUMMARY
+          echo "[View changes](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/${{ steps.get_latest_release.outputs.latest_release }}...${GITHUB_SHA})" >> $GITHUB_STEP_SUMMARY 
