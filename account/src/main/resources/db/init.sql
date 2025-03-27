@@ -15,6 +15,12 @@ CREATE TABLE IF NOT EXISTS accounts (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Insert test data
+INSERT INTO accounts (username, email, password_hash, status) VALUES
+    ('test_user1', 'test1@example.com', 'hash1', 'active'),
+    ('test_user2', 'test2@example.com', 'hash2', 'active'),
+    ('test_user3', 'test3@example.com', 'hash3', 'inactive');
+
 -- Create index for faster lookups
 CREATE INDEX IF NOT EXISTS idx_accounts_username ON accounts(username);
 CREATE INDEX IF NOT EXISTS idx_accounts_email ON accounts(email); 
