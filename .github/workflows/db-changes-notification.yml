@@ -74,8 +74,7 @@ jobs:
             ].join('\n');
             
             await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
-            core.setOutput('changed_files', changedFiles);
-                        
+                                    
         env:
           CHANGED_FILES: ${{ steps.get_changes.outputs.changed_files }}
           LATEST_RELEASE: ${{ steps.get_latest_release.outputs.latest_release }} 
