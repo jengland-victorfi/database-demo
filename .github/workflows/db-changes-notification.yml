@@ -64,8 +64,8 @@ jobs:
             const formattedFiles = "• " + changedFiles
               .trim()
               .split('\n')
-              // .map(file => ` ${file}\n`)
-              .join("\n• ");
+              .map(file => `          • ${file}\n`)
+              .join("");
             core.setOutput('formatted_files', formattedFiles);
             
             const summary = [
@@ -109,4 +109,6 @@ jobs:
               - type: section
                 text:
                   type: mrkdwn
-                  text: "```${{ steps.get_summary.outputs.formatted_files }}```"
+                  text: |
+                    ${{ steps.get_summary.outputs.formatted_files }}
+                    
