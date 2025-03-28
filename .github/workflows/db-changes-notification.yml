@@ -65,7 +65,7 @@ jobs:
               .trim()
               .split('\n')
               .map(file => `- ${file}`)
-              .join('/n');
+              .join('\n');
             
             const summary = [
               `## Database Changes Detected from ${latestRelease} to ${latestRelease}`,
