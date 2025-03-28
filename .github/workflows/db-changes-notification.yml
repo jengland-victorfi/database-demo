@@ -61,12 +61,12 @@ jobs:
                         
             // Set formated files list for for Slack message            
             // const formattedFiles = '```' + changedFiles  + '```';
-            const formattedFiles = changedFiles
+            const formattedFiles = "• " + changedFiles
               .trim()
               .split('\n')
               // .map(file => ` ${file}\n`)
               .join("\n• ");
-            core.setOutput('formatted_files', "• " + formattedFiles);
+            core.setOutput('formatted_files', formattedFiles);
             
             const summary = [
               `## Database Changes Detected from ${latestRelease} to ${latestRelease}`,
