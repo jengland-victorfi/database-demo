@@ -58,16 +58,15 @@ jobs:
             const serverUrl = process.env.GITHUB_SERVER_URL || '';
             const repository = process.env.GITHUB_REPOSITORY || '';
             const sha = process.env.GITHUB_SHA || '';
-            
-            // Format changed files for display
+                        
+            // Set formated files list for for Slack message            
             // const formattedFiles = '```' + changedFiles  + '```';
-            const formattedFilesList = changedFiles
+            const formattedFiles = changedFiles
               .trim()
               .split('\n')
               .map(file => `- ${file}\n`)
               .join('');
-
-            const formattedFiles = '\n' + formattedFilesList + '\n';
+            core.setOutput('formatted_files', formattedFiles);
             
             const summary = [
               `## Database Changes Detected from ${latestRelease} to ${latestRelease}`,
@@ -85,8 +84,7 @@ jobs:
             
             await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
             
-            // Set output for Slack message
-            core.setOutput('formatted_files', formattedFiles);
+            
         env:
           CHANGED_FILES: ${{ steps.get_changes.outputs.changed_files }}
           LATEST_RELEASE: ${{ steps.get_latest_release.outputs.latest_release }} 
@@ -105,7 +103,7 @@ jobs:
                 text:
                   type: mrkdwn
                   text: |
-                    *Database Changes Detected:* from ${{ github.ref_name }}  ->  ${{ steps.get_latest_release.outputs.latest_release }}
+                    *Database Changes Detected:* from ${{ steps.get_latest_release.outputs.latest_release }} <- ${{ github.ref_name }} (${{ github.sha }})
                     *Comparison Link:* <${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.get_latest_release.outputs.latest_release }}...${{ github.ref_name }}|View changes>
                     *Note:* The comparison is made between the latest release tag and the current commit SHA.
               - type: section
