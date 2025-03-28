@@ -61,7 +61,7 @@ jobs:
                         
             // Set formated files list for for Slack message            
             // const formattedFiles = '```' + changedFiles  + '```';
-            const formattedFiles = "• " + changedFiles
+            const formattedFiles = " • " + changedFiles
               .trim()
               .split('\n')
               .join("\n          • ");
