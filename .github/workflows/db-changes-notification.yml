@@ -96,7 +96,7 @@ jobs:
               })
               .join('\n• ');
 
-              10/0;
+            throw new Error("fake news");
 
             const payload = {
               channel: process.env.SLACK_CHANNEL_ID,
