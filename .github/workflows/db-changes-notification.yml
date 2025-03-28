@@ -93,6 +93,12 @@ jobs:
                 return `<${diffUrl}|${filePath}>`;
               })
               .join('\n• ');
+              
+
+            const summary = [
+              `*Database Changes Detected:* from ${process.env.LATEST_RELEASE} <- ${process.env.GITHUB_REF_NAME} (${process.env.GITHUB_SHA})`,
+              `*Comparison Link:* <${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/compare/${process.env.LATEST_RELEASE}...${process.env.GITHUB_SHA}|View changes>`,
+            ].join("\n")
 
             const payload = {
               channel: process.env.SLACK_CHANNEL_ID,
@@ -102,11 +108,7 @@ jobs:
                   type: "section",
                   text: {
                     type: "mrkdwn",
-                    text: [
-                      `*Database Changes Detected:* from ${process.env.LATEST_RELEASE} <- ${process.env.GITHUB_REF_NAME} (${process.env.GITHUB_SHA})`,
-                      `*Comparison Link:* <${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/compare/${process.env.LATEST_RELEASE}...${process.env.GITHUB_SHA}|View changes>`,
-                      "*Note:* The comparison is made between the latest release tag and the current commit SHA."
-                    ].join("\n")
+                    text: summary
                   }
                 },
                 {
@@ -177,4 +179,3 @@ jobs:
           GITHUB_RUN_ID: ${{ github.run_id }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-                    
