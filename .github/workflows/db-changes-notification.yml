@@ -58,14 +58,13 @@ jobs:
             const serverUrl = process.env.GITHUB_SERVER_URL || '';
             const repository = process.env.GITHUB_REPOSITORY || '';
             const sha = process.env.GITHUB_SHA || '';
-
-            const formattedFiles = '```' + changedFiles  + '```';                                  
+                                
             const summary = [
               `## Database Changes Detected from ${latestRelease} to ${latestRelease}`,
               '',
               `### Changed ${changedFiles.trim().split('\n').length} files:` ,
               '```',
-              formattedFiles,
+              changedFiles,
               '```',
               '',
               '### Comparison Link:',
@@ -82,8 +81,7 @@ jobs:
               .split('\n')
               .join("\n          • "); // Add space before each • to match double yaml formatting
             core.setOutput('slack_formatted_files', slackFormattedFiles);
-            
-            
+                        
         env:
           CHANGED_FILES: ${{ steps.get_changes.outputs.changed_files }}
           LATEST_RELEASE: ${{ steps.get_latest_release.outputs.latest_release }} 
