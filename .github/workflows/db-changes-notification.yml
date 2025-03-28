@@ -64,9 +64,9 @@ jobs:
             const formattedFiles = changedFiles
               .trim()
               .split('\n')
-              .map(file => `- ${file}\n`)
-              .join('');
-            core.setOutput('formatted_files', formattedFiles);
+              // .map(file => ` ${file}\n`)
+              .join("\n• ");
+            core.setOutput('formatted_files', "• " + formattedFiles);
             
             const summary = [
               `## Database Changes Detected from ${latestRelease} to ${latestRelease}`,
