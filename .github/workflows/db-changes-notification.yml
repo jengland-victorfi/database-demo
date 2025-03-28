@@ -76,10 +76,15 @@ jobs:
             await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
 
             // Set formated files list for for Slack message                        
-            const slackFormattedFiles = " • " + changedFiles
+            const slackFormattedFiles = changedFiles
               .trim()
               .split('\n')
-              .join("\n          • "); // Add space before each • to match double yaml formatting
+              .map(file => {
+                const filePath = file.trim();
+                const diffUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/compare/${process.env.LATEST_RELEASE}...${process.env.GITHUB_SHA}#diff-${Buffer.from(filePath).toString('base64')}`;
+                return `• <${diffUrl}|${filePath}>`;
+              })
+              .join('\n');
             core.setOutput('slack_formatted_files', slackFormattedFiles);
                         
         env:
@@ -101,11 +106,12 @@ jobs:
                   type: mrkdwn
                   text: |
                     *Database Changes Detected:* from ${{ steps.get_latest_release.outputs.latest_release }} <- ${{ github.ref_name }} (${{ github.sha }})
-                    *Comparison Link:* <${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.get_latest_release.outputs.latest_release }}...${{ github.ref_name }}|View changes>
+                    *Comparison Link:* <${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.get_latest_release.outputs.latest_release }}...${{ github.sha }}|View changes>
                     *Note:* The comparison is made between the latest release tag and the current commit SHA.
               - type: section
                 text:
                   type: mrkdwn
                   text: |
+                    *Changed Files:*
                     ${{ steps.get_summary.outputs.slack_formatted_files }}
                     
