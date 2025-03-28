@@ -104,14 +104,18 @@ jobs:
                   type: "section",
                   text: {
                     type: "mrkdwn",
-                    text: "*Database Changes Detected:* from " + process.env.LATEST_RELEASE + " <- " + process.env.GITHUB_REF_NAME + " (" + process.env.GITHUB_SHA + ")\n*Comparison Link:* <" + process.env.GITHUB_SERVER_URL + "/" + process.env.GITHUB_REPOSITORY + "/compare/" + process.env.LATEST_RELEASE + "..." + process.env.GITHUB_SHA + "|View changes>\n*Note:* The comparison is made between the latest release tag and the current commit SHA."
+                    text: [
+                      `*Database Changes Detected:* from ${process.env.LATEST_RELEASE} <- ${process.env.GITHUB_REF_NAME} (${process.env.GITHUB_SHA})`,
+                      `*Comparison Link:* <${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/compare/${process.env.LATEST_RELEASE}...${process.env.GITHUB_SHA}|View changes>`,
+                      "*Note:* The comparison is made between the latest release tag and the current commit SHA."
+                    ].join("\n")
                   }
                 },
                 {
                   type: "section",
                   text: {
                     type: "mrkdwn",
-                    text: "*Changed Files:*\n" + process.env.SLACK_FORMATTED_FILES
+                    text: ["*Changed Files:*", process.env.SLACK_FORMATTED_FILES].join("\n")
                   }
                 }
               ]
