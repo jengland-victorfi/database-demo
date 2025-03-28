@@ -94,8 +94,6 @@ jobs:
               })
               .join('\n• ');
 
-            throw new Error("fake news");
-
             const payload = {
               channel: process.env.SLACK_CHANNEL_ID,
               text: "Database changes detected",
