@@ -74,18 +74,7 @@ jobs:
             ].join('\n');
             
             await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
-
-            // Set formated files list for for Slack message                        
-            const slackFormattedFiles = "• " + changedFiles
-              .trim()
-              .split('\n')
-              .map(file => {
-                const filePath = file.trim();
-                const diffUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}`;
-                return `<${diffUrl}|${filePath}>`;
-              })
-              .join('\n• ');
-            core.setOutput('slack_formatted_files', slackFormattedFiles);
+            core.setOutput('changed_files', changedFiles);
                         
         env:
           CHANGED_FILES: ${{ steps.get_changes.outputs.changed_files }}
@@ -96,6 +85,17 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const changedFiles = process.env.CHANGED_FILES || '';
+            const slackFormattedFiles = "• " + changedFiles
+              .trim()
+              .split('\n')
+              .map(file => {
+                const filePath = file.trim();
+                const diffUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}`;
+                return `<${diffUrl}|${filePath}>`;
+              })
+              .join('\n• ');
+
             const payload = {
               channel: process.env.SLACK_CHANNEL_ID,
               text: "Database changes detected",
@@ -115,7 +115,7 @@ jobs:
                   type: "section",
                   text: {
                     type: "mrkdwn",
-                    text: ["*Changed Files:*", process.env.SLACK_FORMATTED_FILES].join("\n")
+                    text: ["*Changed Files:*", slackFormattedFiles].join("\n")
                   }
                 }
               ]
@@ -128,13 +128,55 @@ jobs:
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          SLACK_FORMATTED_FILES: ${{ steps.get_summary.outputs.slack_formatted_files }}
+          CHANGED_FILES: ${{ steps.get_changes.outputs.changed_files }}
 
-      - name: Post to a Slack channel
-        if: always()
+      - name: Post Changes to Slack
+        if: success()
         uses: slackapi/slack-github-action@v2.0.0
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
           payload: ${{ steps.generate_slack_payload.outputs.payload }}
+
+      - name: Post Failures to Slack
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const payload = {
+              channel: process.env.SLACK_CHANNEL_ID,
+              text: "❌ Database Changes Workflow Failed",
+              blocks: [
+                {
+                  type: "section",
+                  text: {
+                    type: "mrkdwn",
+                    text: [
+                      "*❌ Database Changes Workflow Failed*",
+                      `*Branch:* ${process.env.GITHUB_REF_NAME}`,
+                      `*Commit:* ${process.env.GITHUB_SHA}`,
+                      `*Workflow:* ${process.env.GITHUB_WORKFLOW}`,
+                      `*Run:* <${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}|View Run>`
+                    ].join("\n")
+                  }
+                }
+              ]
+            };
+            await fetch(`https://slack.com/api/chat.postMessage`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.SLACK_BOT_TOKEN}`
+              },
+              body: JSON.stringify(payload)
+            });
+        env:
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_WORKFLOW: ${{ github.workflow }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
                     
