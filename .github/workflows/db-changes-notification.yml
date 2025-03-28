@@ -64,8 +64,7 @@ jobs:
             const formattedFiles = "• " + changedFiles
               .trim()
               .split('\n')
-              .map(file => `          • ${file}\n`)
-              .join("");
+              .join("\n          • ");
             core.setOutput('formatted_files', formattedFiles);
             
             const summary = [
