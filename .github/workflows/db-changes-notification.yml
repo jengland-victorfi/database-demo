@@ -76,15 +76,15 @@ jobs:
             await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
 
             // Set formated files list for for Slack message                        
-            const slackFormattedFiles = changedFiles
+            const slackFormattedFiles = " • "changedFiles
               .trim()
               .split('\n')
               .map(file => {
                 const filePath = file.trim();
                 const diffUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}`;
-                return `• <${diffUrl}|${filePath}>`;
+                return `<${diffUrl}|${filePath}>`;
               })
-              .join('\n');
+              .join('\n          • ');
             core.setOutput('slack_formatted_files', slackFormattedFiles);
                         
         env:
