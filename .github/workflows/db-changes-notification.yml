@@ -64,8 +64,8 @@ jobs:
             const formattedFilesList = changedFiles
               .trim()
               .split('\n')
-              .map(file => `- ${file}`)
-              .join('\n');
+              .map(file => `- ${file}\n`)
+              .join('');
 
             const formattedFiles = '\n' + formattedFilesList + '\n';
             
