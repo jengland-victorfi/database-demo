@@ -58,15 +58,8 @@ jobs:
             const serverUrl = process.env.GITHUB_SERVER_URL || '';
             const repository = process.env.GITHUB_REPOSITORY || '';
             const sha = process.env.GITHUB_SHA || '';
-                        
-            // Set formated files list for for Slack message            
-            // const formattedFiles = '```' + changedFiles  + '```';
-            const formattedFiles = " • " + changedFiles
-              .trim()
-              .split('\n')
-              .join("\n          • ");
-            core.setOutput('formatted_files', formattedFiles);
-            
+
+            const formattedFiles = '```' + changedFiles  + '```';                                  
             const summary = [
               `## Database Changes Detected from ${latestRelease} to ${latestRelease}`,
               '',
@@ -82,6 +75,13 @@ jobs:
             ].join('\n');
             
             await fs.promises.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
+
+            // Set formated files list for for Slack message                        
+            const slackFormattedFiles = " • " + changedFiles
+              .trim()
+              .split('\n')
+              .join("\n          • "); // Add space before each • to match double yaml formatting
+            core.setOutput('slack_formatted_files', slackFormattedFiles);
             
             
         env:
@@ -109,5 +109,5 @@ jobs:
                 text:
                   type: mrkdwn
                   text: |
-                    ${{ steps.get_summary.outputs.formatted_files }}
+                    ${{ steps.get_summary.outputs.slack_formatted_files }}
                     
