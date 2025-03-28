@@ -89,7 +89,7 @@ jobs:
               .split('\n')
               .map(file => {
                 const filePath = file.trim();
-                const diffUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}`;
+                const diffUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHA}/${filePath}`;
                 return `<${diffUrl}|${filePath}>`;
               })
               .join('\n• ');
