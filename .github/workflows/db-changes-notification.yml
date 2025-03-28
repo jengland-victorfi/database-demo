@@ -109,4 +109,4 @@ jobs:
               - type: section
                 text:
                   type: mrkdwn
-                  text: "${{ steps.get_summary.outputs.formatted_files }}"
+                  text: "```${{ steps.get_summary.outputs.formatted_files }}```"
