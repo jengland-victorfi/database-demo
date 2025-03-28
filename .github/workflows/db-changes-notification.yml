@@ -96,6 +96,8 @@ jobs:
               })
               .join('\n• ');
 
+              10/0;
+
             const payload = {
               channel: process.env.SLACK_CHANNEL_ID,
               text: "Database changes detected",
