@@ -83,25 +83,34 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const changedFiles = process.env.CHANGED_FILES || '';
-            const slackFormattedFiles = "• " + changedFiles
+            const {
+              CHANGED_FILES = '',
+              LATEST_RELEASE,
+              GITHUB_REF_NAME,
+              GITHUB_SHA,
+              GITHUB_SERVER_URL,
+              GITHUB_REPOSITORY,
+              SLACK_CHANNEL_ID
+            } = process.env;
+
+            const slackFormattedFiles = "• " + CHANGED_FILES
               .trim()
               .split('\n')
               .map(file => {
                 const filePath = file.trim();
-                const diffUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHA}/${filePath}`;
+                const diffUrl = `${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/${filePath}`;
                 return `<${diffUrl}|${filePath}>`;
               })
               .join('\n• ');
               
-
+            const shortSha = GITHUB_SHA.substring(0, 7);
             const summary = [
-              `*Database Changes Detected:* from ${process.env.LATEST_RELEASE} <- ${process.env.GITHUB_REF_NAME} (${process.env.GITHUB_SHA})`,
-              `*Comparison Link:* <${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/compare/${process.env.LATEST_RELEASE}...${process.env.GITHUB_SHA}|View changes>`,
+              `*Database Changes Detected:* from ${LATEST_RELEASE} <- ${GITHUB_REF_NAME} (${shortSha})`,
+              `Compare to Latest Release: <${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/${LATEST_RELEASE}...${GITHUB_SHA}|View changes>`,
             ].join("\n")
 
             const payload = {
-              channel: process.env.SLACK_CHANNEL_ID,
+              channel: SLACK_CHANNEL_ID,
               text: "Database changes detected",
               blocks: [
                 {
